@@ -31,4 +31,3 @@ Our team conducted different experiments using complementary approaches to tackl
 - Data Augmentation: Applied various image transformation techniques during training to improve model generalization.
 - Early Stopping: Implemented patience-based early stopping to prevent overfitting while ensuring optimal performance.
 
-My experiments focused on model optimization and understanding the relationship between facial features, gender, and BMI through rigorous testing of different hyperparameters and model configurations.
