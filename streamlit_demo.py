@@ -3,6 +3,9 @@ from PIL import Image, ImageDraw, ImageEnhance, ImageFilter
 import numpy as np
 import random
 import time
+import base64
+from io import BytesIO
+import os
 
 # Set page configuration with a custom theme
 st.set_page_config(
@@ -11,11 +14,31 @@ st.set_page_config(
     layout="wide",
     initial_sidebar_state="expanded",
     menu_items={
-        'Get Help': 'https://github.com/yourusername/face-to-bmi',
-        'Report a bug': 'https://github.com/yourusername/face-to-bmi/issues',
         'About': "# Face to BMI Prediction\nAn AI application that predicts BMI from facial features."
     }
 )
+
+# Function to get image as base64 string
+def get_base64_of_bin_file(bin_file):
+    with open(bin_file, 'rb') as f:
+        data = f.read()
+    return base64.b64encode(data).decode()
+
+# Function to set background from local image
+def set_background(image_file):
+    try:
+        bin_str = get_base64_of_bin_file(image_file)
+        page_bg_img = '''
+        <style>
+        .stApp {
+            background-image: url("data:image/png;base64,%s");
+            background-size: cover;
+        }
+        </style>
+        ''' % bin_str
+        st.markdown(page_bg_img, unsafe_allow_html=True)
+    except:
+        pass
 
 # Custom CSS for better styling
 st.markdown("""
@@ -85,8 +108,12 @@ st.markdown("""
 </style>
 """, unsafe_allow_html=True)
 
+# Load default brain icon
+def get_brain_icon():
+    return "https://www.svgrepo.com/show/13656/brain.svg"
+
 # Sidebar content
-st.sidebar.image("https://www.svgrepo.com/show/13656/brain.svg", width=100)
+st.sidebar.image(get_brain_icon(), width=100)
 st.sidebar.title("Face to BMI")
 st.sidebar.markdown("---")
 
@@ -326,7 +353,7 @@ if page == "Home":
             """)
     
     with col2:
-        st.image("https://www.svgrepo.com/show/13656/brain.svg", width=200)
+        st.image(get_brain_icon(), width=200)
         st.markdown("""
         <div style="background-color:#e8f8f5; padding:15px; border-radius:4px; text-align:center; margin-top:20px;">
             <h3 style="margin-top:0;">Try the Demo</h3>
@@ -433,33 +460,29 @@ elif page == "About":
     # Team information
     st.markdown("### Project Team")
     
-    cols = st.columns(3)
-    with cols[0]:
-        st.markdown("""
-        <div style="text-align:center; padding:15px; border-radius:8px; background-color:#f5f7f9;">
-            <img src="https://www.svgrepo.com/show/335197/avatar.svg" width="100">
-            <h3>Dr. Jane Smith</h3>
-            <p>Lead Researcher</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # Team members - updated with the provided names
+    team_members = [
+        {"name": "Kyler Rose", "role": "Team Member"},
+        {"name": "Cassandra Maldonado", "role": "Team Member"},
+        {"name": "Bradley Stoller", "role": "Team Member"},
+        {"name": "Bruna Medeiros", "role": "Team Member"},
+        {"name": "Yu-Hsuan Ko", "role": "Team Member"},
+        {"name": "Angus Ho", "role": "Team Member"}
+    ]
     
-    with cols[1]:
-        st.markdown("""
-        <div style="text-align:center; padding:15px; border-radius:8px; background-color:#f5f7f9;">
-            <img src="https://www.svgrepo.com/show/335197/avatar.svg" width="100">
-            <h3>John Davis</h3>
-            <p>AI Developer</p>
-        </div>
-        """, unsafe_allow_html=True)
-    
-    with cols[2]:
-        st.markdown("""
-        <div style="text-align:center; padding:15px; border-radius:8px; background-color:#f5f7f9;">
-            <img src="https://www.svgrepo.com/show/335197/avatar.svg" width="100">
-            <h3>Sarah Wilson</h3>
-            <p>UI/UX Designer</p>
-        </div>
-        """, unsafe_allow_html=True)
+    # Display team members in rows of 3
+    for i in range(0, len(team_members), 3):
+        cols = st.columns(3)
+        for j in range(3):
+            if i+j < len(team_members):
+                with cols[j]:
+                    st.markdown(f"""
+                    <div style="text-align:center; padding:15px; border-radius:8px; background-color:#f5f7f9;">
+                        <img src="https://www.svgrepo.com/show/335197/avatar.svg" width="100">
+                        <h3>{team_members[i+j]['name']}</h3>
+                        <p>{team_members[i+j]['role']}</p>
+                    </div>
+                    """, unsafe_allow_html=True)
 
 elif page == "Research":
     # Research page
@@ -476,7 +499,7 @@ elif page == "Research":
     
     Recent studies have demonstrated correlations between facial features and BMI. Facial adiposity (fat storage) changes visibly with overall body composition, creating patterns that can be detected by sophisticated computer vision systems.
     
-    The research paper "Face to BMI: Using Computer Vision to Infer Body Mass Index on Social Media" provides the theoretical foundation for this application.
+    The research paper "Face-to-BMI: Using Computer Vision to Infer Body Mass Index on Social Media" provides the theoretical foundation for this application.
     
     ### How It Works
     
@@ -501,20 +524,17 @@ elif page == "Research":
              caption="Neural network analyzing facial features (Conceptual illustration)", 
              use_column_width=True)
     
-    # Citations
-    st.markdown("### Research Citations")
+    # Updated Research Citation
+    st.markdown("### Research Citation")
     st.markdown("""
-    1. Kocabey, E., Camurcu, M., Ofli, F., Aytar, Y., Marin, J., Torralba, A., & Weber, I. (2017). Face-to-BMI: Using Computer Vision to Infer Body Mass Index on Social Media. Proceedings of the International AAAI Conference on Web and Social Media, 11(1), 572-575.
-    
-    2. Wolffhechel, K., Hahn, A. C., Jarmer, H., Fisher, C. I., Jones, B. C., & DeBruine, L. M. (2015). Testing the utility of a data-driven approach for assessing BMI from face images. PLOS ONE, 10(10), e0140347.
-    
-    3. Pascali, M. A., Giorgi, D., Bastiani, L., Buzzigoli, E., Henriquez, P., Matuszewski, B. J., Morales, M. A., & Colantonio, S. (2016). Face morphology: Can it tell us something about body weight and fat? Computers in Biology and Medicine, 76, 238-249.
+    Face-to-BMI: Using Computer Vision to Infer Body Mass Index on Social Media  
+    Enes Kocabey, Mustafa Camurcu, Ferda Ofli, Yusuf Aytar, Javier Marin, Antonio Torralba, Ingmar Weber
     """)
 
 # Footer
 st.markdown("""
 <div class="footer">
-    <p>© 2025 Face to BMI Prediction | Research Project | <a href="https://github.com/yourusername/face-to-bmi">GitHub</a></p>
+    <p>© 2025 Face to BMI Prediction | Research Project</p>
     <p>This is a demo application for educational and research purposes. Not intended for medical use.</p>
 </div>
 """, unsafe_allow_html=True)
