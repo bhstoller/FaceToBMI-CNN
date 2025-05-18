@@ -6,7 +6,7 @@ This project aims to predict Body Mass Index (BMI) from face images. Our team im
 
 Our team conducted different experiments using complementary approaches to tackle the same problem:
 
-|  **Approach**                          | **Framework**        | **Base Architecture** | **Key Features**                                                                 | **Pearson r** |
+|  **Approach**                          | **Framework**        | **Base Architecture** | **Key Features**                                                                 | **Pearson r Correlation** |
 |----------------------------------------|----------------------|-----------------------|----------------------------------------------------------------------------------|---------------|
 | Face detection + specialized model     | TensorFlow/Keras     | VGG-Face              | MTCNN face detection, command-line interface, deployment-ready structure         | |
 | End-to-end model                       | PyTorch              | ResNet50              | Gender feature integration, model performance analysis, comprehensive training strategy | 0.661 |
