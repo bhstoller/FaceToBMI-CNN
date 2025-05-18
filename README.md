@@ -34,3 +34,17 @@ Our team conducted different experiments using complementary approaches to tackl
 - Data Augmentation: Applied various image transformation techniques during training to improve model generalization.
 - Early Stopping: Implemented patience-based early stopping to prevent overfitting while ensuring optimal performance.
 
+### Vision Transformer (ViT) with PyTorch + Hugging Face
+- **Model Architecture**: Fine-tuned `vit-base-patch16-224-in21k`, a pretrained Vision Transformer trained on ImageNet-21k.
+- **Training Strategy**: Used custom regression head with ReLU and dropout, optimized with AdamW and `ReduceLROnPlateau` scheduler.
+- **Preprocessing**: Applied Hugging Face `ViTFeatureExtractor`-based transform for resizing, normalization, and tensor conversion.
+- **Performance**: Achieved Pearson r = **0.688**, outperforming both baseline and paper-reported results.
+- **Evaluation Metrics**: Tracked MAE, R², and Pearson correlation across epochs to assess model learning and stability.
+
+### Ensemble: Landmark MLP + CNN
+- **Architecture**: Combined predictions from a facial-landmark-based MLP and a MobileNetV3 CNN trained on facial images.
+- **Ensembling Method**: Blended model outputs using weighted averaging to test different contribution levels.
+- **Performance Outcome**: Did not outperform the ViT model, but demonstrated moderate standalone performance for the MLP.
+- **Purpose**: Explored complementary strength of image-based and structured (landmark) inputs for BMI regression.
+
+
