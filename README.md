@@ -12,7 +12,7 @@ Our team conducted different experiments using complementary approaches to tackl
 | End-to-end model                       | PyTorch              | ResNet50              | Gender feature integration, model performance analysis, comprehensive training strategy | 0.661 |
 | ViT-based regression model             | PyTorch + HuggingFace| ViT-B/16-IN21k        | Fine-tuned on facial images, model performance, intense training | 0.685|
 | Landmark + CNN ensemble                | PyTorch              | MLP + MobileNetV3     | Combines landmark MLP and CNN predictions, moderate gains over individual models  | 0.584 |
-| End-to-end model (no sex)         | PyTorch           | EfficientNet    | Pure image-based prediction, no demographic data              | 0.63 |
+| End-to-end model (no sex)         | PyTorch           | EfficientNet    | Pure image-based prediction, no demographic data              | 0.636 |
 
 
 ### VGG-Face with TensorFlow
