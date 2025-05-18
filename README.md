@@ -12,7 +12,7 @@ Our team conducted different experiments using complementary approaches to tackl
 | End-to-end model                       | PyTorch              | ResNet50              | Gender feature integration, model performance analysis, comprehensive training strategy | 0.661 |
 | ViT-based regression model             | PyTorch + HuggingFace| ViT-B/16-IN21k        | Fine-tuned on facial images, model performance, intense training | 0.685|
 | Landmark + CNN ensemble                | PyTorch              | MLP + MobileNetV3     | Combines landmark MLP and CNN predictions, moderate gains over individual models  | 0.584 |
-
+| End-to-end model (no sex)         | PyTorch           | EfficientNet    | Pure image-based prediction, no demographic data              | 0.63 |
 
 
 ### VGG-Face with TensorFlow
@@ -47,4 +47,10 @@ Our team conducted different experiments using complementary approaches to tackl
 - **Performance Outcome**: Did not outperform the ViT model, but demonstrated moderate standalone performance for the MLP.
 - **Purpose**: Explored complementary strength of image-based and structured (landmark) inputs for BMI regression.
 
+### EfficientNet with PyTorch
+- **Architecture**: Leveraged EfficientNet, a lightweight yet high-performing CNN, pre-trained on ImageNet for feature extraction.
+- **Image Input**: Designed to predict BMI using only facial image data, without incorporating demographic attributes such as sex.
+- **Image Preprocessing**: Input images were resized to 200×200 pixels in RGB.
+- **Training Strategy**: Fine-tuned the model using the Adam optimizer with learning rate scheduling and weight decay.
+- **Evaluation Metrics**: Evaluated using multiple regression metrics, including MAE, RMSE, and correlation coefficient.
 
