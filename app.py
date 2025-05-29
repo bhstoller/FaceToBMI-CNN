@@ -1,8 +1,51 @@
+import torch
+from torchvision import transforms
+from transformers import ViTFeatureExtractor
+import joblib
 import streamlit as st
 from PIL import Image, ImageDraw
-import numpy as np
-import random
-import time
+import random, time
+from model import ViTBMIRegressor
+
+@st.cache_resource
+def load_model(path: str):
+    model = ViTBMIRegressor()
+    state = torch.load(path, map_location="cpu")
+    model.load_state_dict(state)
+    model.eval()
+    return model
+
+MODEL = load_model("vit_model_final.pt")
+Y_SCALER = joblib.load("y_scaler.pkl")
+
+extractor = ViTFeatureExtractor.from_pretrained("google/vit-base-patch16-224-in21k")
+vit_transform = transforms.Compose([
+    transforms.Resize((224, 224)),
+    transforms.ToTensor(),
+    transforms.Normalize(mean=extractor.image_mean,
+                         std=extractor.image_std)
+])
+# Load your scaler (you can pickle it after training)
+import joblib
+Y_SCALER = joblib.load("y_scaler.pkl")  # contains the StandardScaler used
+
+def real_predict_bmi(pil_img: Image.Image):
+    # Preprocess
+    x = vit_transform(pil_img).unsqueeze(0)  # shape (1,3,224,224)
+    with torch.no_grad():
+        pred_scaled = MODEL(x).cpu().numpy().ravel()[0]
+    # Invert scaling
+    bmi = float(Y_SCALER.inverse_transform([[pred_scaled]])[0,0])
+    # Choose category
+    if bmi < 18.5:
+        cat = "Underweight"
+    elif bmi < 25:
+        cat = "Normal weight"
+    elif bmi < 30:
+        cat = "Overweight"
+    else:
+        cat = "Obesity"
+    return bmi, cat
 
 # Set page configuration
 st.set_page_config(
@@ -68,29 +111,29 @@ class SimulatedBMIPredictor:
         """Simulate face detection"""
         # Get image dimensions
         width, height = image.size
-        
+
         # Create a simulated face box in the center of the image
         center_x, center_y = width // 2, height // 2
         box_size = min(width, height) // 2
         x = center_x - box_size // 2
         y = center_y - box_size // 2
-        
+
         return (x, y, box_size, box_size)
-    
+
     def predict_bmi(self, image):
         """Simulate BMI prediction"""
         # In a real model, this would analyze facial features
         # Here we'll use a consistent random value based on image properties
-        
+
         # Get image dimensions and calculate a seed value
         width, height = image.size
         seed_value = (width * height) % 1000
         random.seed(seed_value)
-        
+
         # Generate a BMI value (slightly skewed towards normal range)
         bmi_base = random.normalvariate(23, 4)
         bmi = max(15, min(40, bmi_base))
-        
+
         # Determine BMI category
         if bmi < 18.5:
             category = 'Underweight'
@@ -100,7 +143,7 @@ class SimulatedBMIPredictor:
             category = 'Overweight'
         else:
             category = 'Obesity'
-        
+
         return bmi, category
 
 # Function to display BMI category with styling
@@ -121,22 +164,22 @@ def display_bmi_category(bmi, category):
         color = "#e74c3c"
         icon = "❗"
         description = "BMI of 30 or higher indicates obesity. This increases risk for many health conditions."
-    
+
     st.markdown(f"""
     <div class="category-badge" style="background-color:{color}20; border-left:5px solid {color}; color:{color};">
         <h2 style="margin:0;">{icon} {category} (BMI: {bmi:.1f})</h2>
     </div>
     """, unsafe_allow_html=True)
-    
+
     st.markdown(f"""
     <div style="margin-bottom:25px;">
         {description}
     </div>
     """, unsafe_allow_html=True)
-    
+
     # Add a visualization gauge
     st.markdown("### BMI Scale")
-    
+
     # Calculate position on the BMI scale (0-100%)
     if bmi < 15:
         position = 0
@@ -144,7 +187,7 @@ def display_bmi_category(bmi, category):
         position = 100
     else:
         position = (bmi - 15) * 100 / 20  # Scale 15-35 to 0-100%
-    
+
     # Create the gauge sections
     gauge_html = f"""
     <div style="display:flex; height:25px; border-radius:5px; overflow:hidden; margin-bottom:10px; width:100%;">
@@ -170,21 +213,21 @@ def display_bmi_category(bmi, category):
 def draw_face_detection(image, face_box):
     # Create a copy of the image
     enhanced = image.copy()
-    
+
     # Create a drawing surface
     draw = ImageDraw.Draw(enhanced)
-    
+
     # Extract coordinates
     x, y, w, h = face_box
-    
+
     # Draw a fancy border
     border_width = 3
     draw.rectangle(
-        [(x, y), (x + w, y + h)], 
-        outline=(41, 128, 185), 
+        [(x, y), (x + w, y + h)],
+        outline=(41, 128, 185),
         width=border_width
     )
-    
+
     # Draw corner markers
     corner_size = 15
     # Top left
@@ -199,11 +242,11 @@ def draw_face_detection(image, face_box):
     # Bottom right
     draw.line([(x + w, y + h), (x + w - corner_size, y + h)], fill=(231, 76, 60), width=border_width)
     draw.line([(x + w, y + h), (x + w, y + h - corner_size)], fill=(231, 76, 60), width=border_width)
-    
+
     # Add some scan lines for a "processing" effect
     for i in range(y, y + h, 10):
         draw.line([(x, i), (x + w, i)], fill=(46, 204, 113, 128), width=1)
-    
+
     return enhanced
 
 # Function to make BMI prediction
@@ -211,50 +254,50 @@ def predict_bmi(image):
     with st.spinner("Processing image..."):
         # Initialize our simulated predictor
         predictor = SimulatedBMIPredictor()
-        
+
         # Initialize progress tracking
         progress_bar = st.progress(0)
         status_text = st.empty()
-        
+
         # Step 1: Initialize
         status_text.text("Initializing BMI predictor...")
         time.sleep(0.5)
         progress_bar.progress(20)
-        
+
         # Step 2: Detect face
         status_text.text("Detecting face in image...")
         time.sleep(0.8)
-        
+
         # Simulated face detection
         face_box = predictor.detect_face(image)
-        
+
         # Draw detection on image
         enhanced_image = draw_face_detection(image, face_box)
-        
+
         # Display the processed image
         st.markdown("<div class='img-container'>", unsafe_allow_html=True)
         st.image(enhanced_image, caption="Face Detection", use_column_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-        
+
         progress_bar.progress(60)
-        
+
         # Step 3: Predict BMI
         status_text.text("Analyzing facial features and predicting BMI...")
         time.sleep(1.2)
-        
+
         # Simulated BMI prediction
         bmi, category = predictor.predict_bmi(image)
         progress_bar.progress(80)
-        
+
         # Step 4: Display results
         status_text.text("Preparing results...")
         time.sleep(0.5)  # Brief pause for visual effect
         progress_bar.progress(100)
         status_text.empty()
-        
+
         # Display results header
         st.markdown("<h2 style='text-align:center; margin-top:30px; margin-bottom:30px;'>Prediction Results</h2>", unsafe_allow_html=True)
-        
+
         # Add demo notification
         st.markdown("""
         <div style="background-color:#f8d7da; border-left:5px solid #dc3545; padding:15px; margin-bottom:20px; border-radius:4px;">
@@ -262,10 +305,10 @@ def predict_bmi(image):
             The real app would use a trained machine learning model to analyze facial features.
         </div>
         """, unsafe_allow_html=True)
-        
+
         # Display the BMI results
         display_bmi_category(bmi, category)
-        
+
         # Add a BMI fact
         bmi_facts = [
             "BMI was developed by Belgian mathematician Adolphe Quetelet in the 1830s.",
@@ -274,7 +317,7 @@ def predict_bmi(image):
             "BMI categories may vary slightly for different ethnic groups.",
             "The BMI formula is weight (kg) divided by height squared (m²)."
         ]
-        
+
         st.markdown(f"""
         <div style="background-color:#e8f4f8; padding:15px; border-radius:4px; margin-top:30px;">
             <strong>BMI Fact:</strong> {random.choice(bmi_facts)}
@@ -296,23 +339,24 @@ with col1:
     # Upload image
     st.markdown("### Upload Your Image")
     uploaded_file = st.file_uploader("Choose an image...", type=["jpg", "jpeg", "png", "bmp"])
-    
+
     if uploaded_file is not None:
         # Read the image
         image = Image.open(uploaded_file)
-        
+
         # Display the original image
         st.markdown("<div class='img-container'>", unsafe_allow_html=True)
         st.image(image, caption="Uploaded Image", use_column_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
-        
+
         # Button to trigger prediction
         predict_button = st.button("Predict BMI", key="predict_button")
 
 with col2:
-    if uploaded_file is not None and predict_button:
-        # Process the image and show prediction
-        predict_bmi(image)
+    if uploaded_file and predict_button:
+        bmi, category = real_predict_bmi(image)
+        st.success(f"Predicted BMI: {bmi:.1f}, Category: {category}")
+        display_bmi_category(bmi, category)
     else:
         # Show instructions
         st.markdown("### How It Works")
@@ -329,7 +373,7 @@ with col2:
         
         In the full application, this would use a deep learning model based on VGG-Face architecture trained on a dataset of facial images with known BMI values.
         """)
-        
+
         st.markdown("""
         <div style="background-color:#e8f8f5; padding:15px; border-radius:4px; margin-top:20px;">
             <h4 style="margin-top:0;">Research Citation</h4>
@@ -344,7 +388,7 @@ st.markdown("### Project Team")
 
 # Team members - showing in two rows
 team_members = [
-    "Kyler Rose", "Cassandra Maldonado", "Bradley Stoller", 
+    "Kyler Rose", "Cassandra Maldonado", "Bradley Stoller",
     "Bruna Medeiros", "Yu-Hsuan Ko", "Angus Ho"
 ]
 

@@ -1,1 +1,5 @@
 data/
+.DS_Store
+*.pyc
+vit_model_final.pt
+y_scaler.pkl
