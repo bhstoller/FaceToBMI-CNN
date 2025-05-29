@@ -278,7 +278,7 @@ def predict_bmi(image):
 
         # Display the processed image
         st.markdown("<div class='img-container'>", unsafe_allow_html=True)
-        st.image(enhanced_image, caption="Face Detection", use_column_width=True)
+        st.image(enhanced_image, caption="Face Detection", use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         progress_bar.progress(60)
@@ -329,7 +329,7 @@ def predict_bmi(image):
 # Main app
 st.title("Face to BMI Prediction")
 st.markdown("""
-<div class="info-box">
+<div class="info-box", style="color:#2c3e50;">
     Welcome to the Face to BMI Prediction app! This demo simulates how AI can analyze facial features to estimate Body Mass Index (BMI).
 </div>
 """, unsafe_allow_html=True)
@@ -348,7 +348,7 @@ with col1:
 
         # Display the original image
         st.markdown("<div class='img-container'>", unsafe_allow_html=True)
-        st.image(image, caption="Uploaded Image", use_column_width=True)
+        st.image(image, caption="Uploaded Image", use_container_width=True)
         st.markdown("</div>", unsafe_allow_html=True)
 
         # Button to trigger prediction
@@ -377,7 +377,7 @@ with col2:
         """)
 
         st.markdown("""
-        <div style="background-color:#e8f8f5; padding:15px; border-radius:4px; margin-top:20px;">
+        <div style="background-color:#e8f8f5; padding:15px; border-radius:4px; margin-top:20px; color:#2c3e50;">
             <h4 style="margin-top:0;">Research Citation</h4>
             <p>Face-to-BMI: Using Computer Vision to Infer Body Mass Index on Social Media<br>
             Enes Kocabey, Mustafa Camurcu, Ferda Ofli, Yusuf Aytar, Javier Marin, Antonio Torralba, Ingmar Weber</p>
