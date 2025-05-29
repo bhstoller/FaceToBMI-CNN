@@ -3,3 +3,8 @@ data/
 *.pyc
 vit_model_final.pt
 y_scaler.pkl
+
+# Elastic Beanstalk Files
+.elasticbeanstalk/*
+!.elasticbeanstalk/*.cfg.yml
+!.elasticbeanstalk/*.global.yml

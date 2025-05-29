@@ -5,18 +5,15 @@ import joblib
 import streamlit as st
 from PIL import Image, ImageDraw
 import random, time
+import os, boto3
 from model import ViTBMIRegressor
-
-# Set page configuration
-st.set_page_config(
-    page_title="Face to BMI Prediction",
-    page_icon="🧠",
-    layout="wide",
-    initial_sidebar_state="expanded"
-)
 
 @st.cache_resource
 def load_model(path: str):
+    bucket = "my-bmi-model-bucket"
+    s3 = boto3.client("s3")
+    if not os.path.exists(path):
+        s3.download_file(bucket, path, path)
     model = ViTBMIRegressor()
     state = torch.load(path, map_location="cpu")
     model.load_state_dict(state)
@@ -55,7 +52,13 @@ def real_predict_bmi(pil_img: Image.Image):
         cat = "Obesity"
     return bmi, cat
 
-
+# Set page configuration
+st.set_page_config(
+    page_title="Face to BMI Prediction",
+    page_icon="🧠",
+    layout="wide",
+    initial_sidebar_state="expanded"
+)
 
 # Custom CSS for styling
 st.markdown("""

@@ -1,0 +1,8 @@
+streamlit
+torch
+torchvision
+transformers
+boto3
+scikit-learn
+joblib
+pillow
